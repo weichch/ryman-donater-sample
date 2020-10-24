@@ -1,0 +1,15 @@
+﻿<!-- https://stripe.com/docs/checkout/integration-builder -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buy cool new product</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<script type="text/javascript">
+    // Create an instance of the Stripe object with your publishable API key
+    var stripe = Stripe("$apikey$");
+    var sessionId = "$sessionId$";
+
+    stripe.redirectToCheckout({ sessionId: sessionId });
+</script>
+</html>
