@@ -224,6 +224,15 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                         text=new
                         {
                             type="mrkdwn",
+                            text="*$123,456* raised so far by *666* supporters"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text=new
+                        {
+                            type="mrkdwn",
                             text="*Melanoma New Zealand is the only charity organisation dedicated to preventing avoidable deaths and suffering from melanoma, by:*"
                         }
                     },
@@ -233,7 +242,7 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                         text=new
                         {
                             type="mrkdwn",
-                            text="• Providing information about all aspects of melanoma\r\n• Promoting regular skin checks for early detection\r\n• Advocating for increased access to high quality clinical care\r\n• Leveraging relationships to amplify our effectiveness\r\n• Being financially sustainable to achieve our mission"
+                            text="\u2800  • Providing information about all aspects of melanoma\r\n\u2800  • Promoting regular skin checks for early detection\r\n\u2800  • Advocating for increased access to high quality clinical care\r\n\u2800  • Leveraging relationships to amplify our effectiveness\r\n\u2800  • Being financially sustainable to achieve our mission"
                         }
                     },
                     new
@@ -311,7 +320,7 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                         text = new
                         {
                             type = "mrkdwn",
-                            text = "*Pay via chattR*"
+                            text = "*Pay online*"
                         }
                     },
                     new
@@ -320,7 +329,7 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                         text = new
                         {
                             type = "mrkdwn",
-                            text = "Simply choose your amount to give and complete payment via chattR."
+                            text = "Simply choose your amount to give and complete payment via Stripe in your browser:"
                         }
                     },
                     new
@@ -376,6 +385,30 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                                 },
                                 value = "custom",
                                 action_id = "donate-custom"
+                            },
+                            new
+                            {
+                                type = "checkboxes",
+                                options = new[]
+                                {
+                                    new
+                                    {
+                                        text = new
+                                        {
+                                            type = "plain_text",
+                                            text = "I'd like to contribute every month",
+                                            emoji = true
+                                        },
+                                        description = new
+                                        {
+                                            type = "plain_text",
+                                            text = "By checking this box, you agree that the same amount will be deducted from your card monthly.",
+                                            emoji = true
+                                        },
+                                        value = "value-0"
+                                    }
+                                },
+                                action_id = "actionId-1"
                             }
                         }
                     },
@@ -505,7 +538,7 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                             text = new
                             {
                                 type = "mrkdwn",
-                                text = "*Pay via chattR*"
+                                text = "*Pay online*"
                             }
                         },
                         new
@@ -514,7 +547,8 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                             text = new
                             {
                                 type = "mrkdwn",
-                                text = "Simply choose your amount to give and complete payment via chattR."
+                                text =
+                                    "Simply choose your amount to give and complete payment via Stripe in your browser:"
                             }
                         },
                         new
@@ -570,6 +604,30 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                                     },
                                     value = "custom",
                                     action_id = "donate-custom"
+                                },
+                                new
+                                {
+                                    type = "checkboxes",
+                                    options = new[]
+                                    {
+                                        new
+                                        {
+                                            text = new
+                                            {
+                                                type = "plain_text",
+                                                text = "I'd like to contribute every month",
+                                                emoji = true
+                                            },
+                                            description = new
+                                            {
+                                                type = "plain_text",
+                                                text = "By checking this box, you agree that the same amount will be deducted from your card monthly.",
+                                                emoji = true
+                                            },
+                                            value = "value-0"
+                                        }
+                                    },
+                                    action_id = "actionId-1"
                                 }
                             }
                         },
