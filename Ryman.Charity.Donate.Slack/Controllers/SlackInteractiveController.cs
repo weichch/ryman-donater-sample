@@ -155,7 +155,11 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                 {
                     trigger_id = "",
                     type = "",
-                    callback_id = ""
+                    callback_id = "",
+                    view = new
+                    {
+                        private_metadata = ""
+                    }
                 });
 
             if (response.type == "shortcut" && response.callback_id == "ryman_charity_donate")
@@ -170,7 +174,14 @@ namespace Ryman.Charity.Donate.Slack.Controllers
 
             if (response.type == "view_submission")
             {
-                return CompleteViewAsync(payload);
+                if (string.Equals(response.view?.private_metadata, "SummaryView"))
+                {
+                    return StartDonateViewAsync();
+                }
+                else
+                {
+                    return CompleteViewAsync(payload);
+                }
             }
 
             return Task.FromResult<IActionResult>(Ok());
@@ -187,38 +198,120 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                     text = "Give a Little"
                 },
                 callback_id = Guid.NewGuid().ToString(),
-                private_metadata = "1234",
+                private_metadata = "SummaryView",
                 close = new
                 {
                     type = "plain_text",
                     text = "Maybe later"
                 },
-                //submit = new
-                //{
-                //    type = "plain_text",
-                //    text = "Give"
-                //},
+                submit = new
+                {
+                    type = "plain_text",
+                    text = "Donate"
+                },
                 clear_on_close = true,
                 blocks = new object[]
                 {
                     new
                     {
+                        type = "image",
+                        image_url = "https://novashades.co.nz/wp-content/uploads/2018/10/BLOG-POST_MELANOMA-750x200.jpg",
+                        alt_text = "Melanoma New Zealand"
+                    },
+                    new
+                    {
+                        type = "section",
+                        text=new
+                        {
+                            type="mrkdwn",
+                            text="*Melanoma New Zealand is the only charity organisation dedicated to preventing avoidable deaths and suffering from melanoma, by:*"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text=new
+                        {
+                            type="mrkdwn",
+                            text="• Providing information about all aspects of melanoma\r\n• Promoting regular skin checks for early detection\r\n• Advocating for increased access to high quality clinical care\r\n• Leveraging relationships to amplify our effectiveness\r\n• Being financially sustainable to achieve our mission"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text=new
+                        {
+                            type="mrkdwn",
+                            text="*If melanoma is recognised and treated early enough it is almost always curable.*"
+                        }
+                    }
+                },
+            };
+
+            var slackRequest = new
+            {
+                trigger_id,
+                view
+            };
+
+            var body = JsonConvert.SerializeObject(slackRequest);
+
+            using (var client = _httpFactory.CreateClient("slack"))
+            {
+                var postResponse = await client.PostAsync("https://slack.com/api/views.open",
+                    new StringContent(body, Encoding.UTF8, "application/json"));
+                var content = await postResponse.Content.ReadAsStringAsync();
+            }
+
+            return Ok();
+        }
+
+        private async Task<IActionResult> StartDonateViewAsync()
+        {
+            var view = new
+            {
+                type = "modal",
+                title = new
+                {
+                    type = "plain_text",
+                    text = "Give a Little"
+                },
+                callback_id = Guid.NewGuid().ToString(),
+                private_metadata = "DonateView",
+                close = new
+                {
+                    type = "plain_text",
+                    text = "Maybe later"
+                },
+                clear_on_close = true,
+                blocks = new object[]
+                {
+                    new
+                    {
+                        type = "image",
+                        image_url = "https://novashades.co.nz/wp-content/uploads/2018/10/BLOG-POST_MELANOMA-750x200.jpg",
+                        alt_text = "Melanoma New Zealand"
+                    },
+                    new
+                    {
                         type = "section",
                         text = new
                         {
-                            type = "plain_text",
-                            text = @"In August, Ryman starts working with its next charity partners. The emphasis is on helping Melanoma New Zealand and the Melanoma Institute Australia.
-
-Melanoma New Zealand Chief Executive Andrea Newland said the organisation was thrilled to have been chosen as a charity partner. “Ryman Healthcare’s extraordinarily generous support of so many charities over many years is truly life changing,” she told a group of Diana Isaac Retirement Village residents.
-
-Ms Newland said Melanoma NZ’s mission was to prevent avoidable suffering and deaths from melanoma “It sounds a lofty goal, but it’s entirely achievable – as for the most part, melanoma is both preventable as well as curable if caught early.”
-
-Meanwhile, the statistics were scary, particularly as living in New Zealand meant the chances of getting melanoma were higher than anywhere else in the world,” she said.
-
-“More than 4,000 New Zealanders are diagnosed with melanoma every year. More than 360 people die from melanoma every year in New Zealand – that’s higher than our road toll.” More than half of all registered incidences of melanoma occurred in people aged 65 and over. Twice as many men than women died from melanoma, Ms Newland added.
-
-Ryman Healthcare’s support would enable the charity to do some new and exciting work across New Zealand to help raise awareness about melanoma prevention and early detection, and to ultimately save lives, she said.",
-                            emoji = true
+                            type = "mrkdwn",
+                            text = "*Here are some handy ideas and tips to get you started:*"
+                        }
+                    },
+                    new
+                    {
+                        type="divider"
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Talk to staff at your local reception*"
                         }
                     },
                     new
@@ -227,13 +320,44 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                         text = new
                         {
                             type = "mrkdwn",
-                            text = "*Would you like to help?*"
+                            text = "You can pay with cash or card at reception, or bank transfer direct to the charity account:"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Bank Account Name:* Ryman Charity Bank Account\r\n*Bank Account Number:* 01-1111-2222222-00"
+                        }
+                    },
+                    new
+                    {
+                        type="divider"
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Pay via chattR*"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "Simply choose your amount to give and complete payment via chattR."
                         }
                     },
                     new
                     {
                         type = "actions",
-                        block_id="donate_value_block",
+                        block_id = "donate_value_block",
                         elements = new object[]
                         {
                             new
@@ -278,7 +402,7 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                                 text = new
                                 {
                                     type = "plain_text",
-                                    text = "Custom",
+                                    text = "More or less",
                                     emoji = true
                                 },
                                 value = "custom",
@@ -289,22 +413,13 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                 },
             };
 
-            var slackRequest = new
+            await Task.Yield();
+
+            return Ok(new
             {
-                trigger_id,
+                response_action = "update",
                 view
-            };
-
-            var body = JsonConvert.SerializeObject(slackRequest);
-
-            using (var client = _httpFactory.CreateClient("slack"))
-            {
-                var postResponse = await client.PostAsync("https://slack.com/api/views.open",
-                    new StringContent(body, Encoding.UTF8, "application/json"));
-                var content = await postResponse.Content.ReadAsStringAsync();
-            }
-
-            return Ok();
+            });
         }
 
         private async Task<IActionResult> UpdateViewAsync(string payload)
@@ -343,7 +458,7 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                     text = "Give a Little"
                 },
                 callback_id = Guid.NewGuid().ToString(),
-                private_metadata = "1234",
+                private_metadata = "DonateView",
                 close = new
                 {
                     type = "plain_text",
@@ -359,22 +474,30 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                 {
                     new
                     {
+                        type = "image",
+                        image_url = "https://novashades.co.nz/wp-content/uploads/2018/10/BLOG-POST_MELANOMA-750x200.jpg",
+                        alt_text = "Melanoma New Zealand"
+                    },
+                    new
+                    {
                         type = "section",
                         text = new
                         {
-                            type = "plain_text",
-                            text = @"In August, Ryman starts working with its next charity partners. The emphasis is on helping Melanoma New Zealand and the Melanoma Institute Australia.
-
-Melanoma New Zealand Chief Executive Andrea Newland said the organisation was thrilled to have been chosen as a charity partner. “Ryman Healthcare’s extraordinarily generous support of so many charities over many years is truly life changing,” she told a group of Diana Isaac Retirement Village residents.
-
-Ms Newland said Melanoma NZ’s mission was to prevent avoidable suffering and deaths from melanoma “It sounds a lofty goal, but it’s entirely achievable – as for the most part, melanoma is both preventable as well as curable if caught early.”
-
-Meanwhile, the statistics were scary, particularly as living in New Zealand meant the chances of getting melanoma were higher than anywhere else in the world,” she said.
-
-“More than 4,000 New Zealanders are diagnosed with melanoma every year. More than 360 people die from melanoma every year in New Zealand – that’s higher than our road toll.” More than half of all registered incidences of melanoma occurred in people aged 65 and over. Twice as many men than women died from melanoma, Ms Newland added.
-
-Ryman Healthcare’s support would enable the charity to do some new and exciting work across New Zealand to help raise awareness about melanoma prevention and early detection, and to ultimately save lives, she said.",
-                            emoji = true
+                            type = "mrkdwn",
+                            text = "*Here are some handy ideas and tips to get you started:*"
+                        }
+                    },
+                    new
+                    {
+                        type="divider"
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Talk to staff at your local reception*"
                         }
                     },
                     new
@@ -383,13 +506,44 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                         text = new
                         {
                             type = "mrkdwn",
-                            text = "*Would you like to help?*"
+                            text = "You can pay with cash or card at reception, or bank transfer direct to the charity account:"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Bank Account Name:* Ryman Charity Bank Account\r\n*Bank Account Number:* 01-1111-2222222-00"
+                        }
+                    },
+                    new
+                    {
+                        type="divider"
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Pay via chattR*"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "Simply choose your amount to give and complete payment via chattR."
                         }
                     },
                     new
                     {
                         type = "actions",
-                        block_id="donate_value_block",
+                        block_id = "donate_value_block",
                         elements = new object[]
                         {
                             new
@@ -434,7 +588,7 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                                 text = new
                                 {
                                     type = "plain_text",
-                                    text = "Custom",
+                                    text = "More or less",
                                     emoji = true
                                 },
                                 value = "custom",
@@ -466,7 +620,7 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                     },
                 },
             };
-
+            
             var slackRequest = new
             {
                 view_id= payloadObj.view.id,
