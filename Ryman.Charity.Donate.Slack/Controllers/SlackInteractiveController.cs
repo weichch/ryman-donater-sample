@@ -143,7 +143,7 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                 var content = await postResponse.Content.ReadAsStringAsync();
             }
 
-            return Ok();
+            return Ok("Your payment has been processed successfully. Feel free to close this browser window.");
         }
 
         [HttpPost]
@@ -311,37 +311,6 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                         text = new
                         {
                             type = "mrkdwn",
-                            text = "*Talk to staff at your local reception*"
-                        }
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
-                        {
-                            type = "mrkdwn",
-                            text = "You can pay with cash or card at reception, or bank transfer direct to the charity account:"
-                        }
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
-                        {
-                            type = "mrkdwn",
-                            text = "*Bank Account Name:* Ryman Charity Bank Account\r\n*Bank Account Number:* 01-1111-2222222-00"
-                        }
-                    },
-                    new
-                    {
-                        type="divider"
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
-                        {
-                            type = "mrkdwn",
                             text = "*Pay via chattR*"
                         }
                     },
@@ -409,7 +378,38 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                                 action_id = "donate-custom"
                             }
                         }
-                    }
+                    },
+                    new
+                    {
+                        type="divider"
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Talk to staff at your local reception*"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "You can pay with cash or card at reception, or bank transfer direct to the charity account:"
+                        }
+                    },
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "*Bank Account Name:* Ryman Charity Bank Account\r\n*Bank Account Number:* 01-1111-2222222-00"
+                        }
+                    },
                 },
             };
 
@@ -431,12 +431,12 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                     {
                         id = ""
                     },
-                    actions = new []
+                    actions = new[]
                     {
                         new
                         {
                             action_id = "",
-                            value=""
+                            value = ""
                         }
                     }
                 });
@@ -449,181 +449,192 @@ namespace Ryman.Charity.Donate.Slack.Controllers
             var donateValue = payloadObj.actions[0].value;
             var confirmationText = donateValue == "custom" ? "type" : "confirm";
 
-            var view = new
+            object view;
+            if (donateValue != "custom")
             {
-                type = "modal",
-                title = new
+                view = CreatePayView(payloadObj.view.id, donateValue);
+            }
+            else
+            {
+                view = new
                 {
-                    type = "plain_text",
-                    text = "Give a Little"
-                },
-                callback_id = Guid.NewGuid().ToString(),
-                private_metadata = "DonateView",
-                close = new
-                {
-                    type = "plain_text",
-                    text = "Maybe later"
-                },
-                submit = new
-                {
-                    type = "plain_text",
-                    text = "Give"
-                },
-                clear_on_close = true,
-                blocks = new object[]
-                {
-                    new
+                    type = "modal",
+                    title = new
                     {
-                        type = "image",
-                        image_url = "https://novashades.co.nz/wp-content/uploads/2018/10/BLOG-POST_MELANOMA-750x200.jpg",
-                        alt_text = "Melanoma New Zealand"
+                        type = "plain_text",
+                        text = "Give a Little"
                     },
-                    new
+                    callback_id = Guid.NewGuid().ToString(),
+                    private_metadata = "DonateView",
+                    close = new
                     {
-                        type = "section",
-                        text = new
+                        type = "plain_text",
+                        text = "Maybe later"
+                    },
+                    submit = new
+                    {
+                        type = "plain_text",
+                        text = "Give"
+                    },
+                    clear_on_close = true,
+                    blocks = new object[]
+                    {
+                        new
                         {
-                            type = "mrkdwn",
-                            text = "*Here are some handy ideas and tips to get you started:*"
-                        }
-                    },
-                    new
-                    {
-                        type="divider"
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
+                            type = "image",
+                            image_url =
+                                "https://novashades.co.nz/wp-content/uploads/2018/10/BLOG-POST_MELANOMA-750x200.jpg",
+                            alt_text = "Melanoma New Zealand"
+                        },
+                        new
                         {
-                            type = "mrkdwn",
-                            text = "*Talk to staff at your local reception*"
-                        }
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
-                        {
-                            type = "mrkdwn",
-                            text = "You can pay with cash or card at reception, or bank transfer direct to the charity account:"
-                        }
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
-                        {
-                            type = "mrkdwn",
-                            text = "*Bank Account Name:* Ryman Charity Bank Account\r\n*Bank Account Number:* 01-1111-2222222-00"
-                        }
-                    },
-                    new
-                    {
-                        type="divider"
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
-                        {
-                            type = "mrkdwn",
-                            text = "*Pay via chattR*"
-                        }
-                    },
-                    new
-                    {
-                        type = "section",
-                        text = new
-                        {
-                            type = "mrkdwn",
-                            text = "Simply choose your amount to give and complete payment via chattR."
-                        }
-                    },
-                    new
-                    {
-                        type = "actions",
-                        block_id = "donate_value_block",
-                        elements = new object[]
-                        {
-                            new
+                            type = "section",
+                            text = new
                             {
-                                type = "button",
-                                text = new
-                                {
-                                    type = "plain_text",
-                                    text = "$5",
-                                    emoji = true
-                                },
-                                value = "5",
-                                action_id = "donate-5"
-                            },
-                            new
-                            {
-                                type = "button",
-                                text = new
-                                {
-                                    type = "plain_text",
-                                    text = "$10",
-                                    emoji = true
-                                },
-                                value = "10",
-                                action_id = "donate-10"
-                            },
-                            new
-                            {
-                                type = "button",
-                                text = new
-                                {
-                                    type = "plain_text",
-                                    text = "$20",
-                                    emoji = true
-                                },
-                                value = "20",
-                                action_id = "donate-20"
-                            },
-                            new
-                            {
-                                type = "button",
-                                text = new
-                                {
-                                    type = "plain_text",
-                                    text = "More or less",
-                                    emoji = true
-                                },
-                                value = "custom",
-                                action_id = "donate-custom"
-                            }
-                        }
-                    },
-                    new
-                    {
-                        type = "input",
-                        block_id="donate_amount_block",
-                        element=new
-                        {
-                            type="plain_text_input",
-                            action_id="donate_amount",
-                            initial_value=donateValue=="custom"?"":donateValue,
-                            placeholder=new
-                            {
-                                type="plain_text",
-                                text="Amount to give"
+                                type = "mrkdwn",
+                                text = "*Here are some handy ideas and tips to get you started:*"
                             }
                         },
-                        label=new
+                        new
                         {
-                            type="plain_text",
-                            text=$"Please {confirmationText} amount to give:",
-                            emoji=false
-                        }
+                            type = "divider"
+                        },
+                        new
+                        {
+                            type = "section",
+                            text = new
+                            {
+                                type = "mrkdwn",
+                                text = "*Pay via chattR*"
+                            }
+                        },
+                        new
+                        {
+                            type = "section",
+                            text = new
+                            {
+                                type = "mrkdwn",
+                                text = "Simply choose your amount to give and complete payment via chattR."
+                            }
+                        },
+                        new
+                        {
+                            type = "actions",
+                            block_id = "donate_value_block",
+                            elements = new object[]
+                            {
+                                new
+                                {
+                                    type = "button",
+                                    text = new
+                                    {
+                                        type = "plain_text",
+                                        text = "$5",
+                                        emoji = true
+                                    },
+                                    value = "5",
+                                    action_id = "donate-5"
+                                },
+                                new
+                                {
+                                    type = "button",
+                                    text = new
+                                    {
+                                        type = "plain_text",
+                                        text = "$10",
+                                        emoji = true
+                                    },
+                                    value = "10",
+                                    action_id = "donate-10"
+                                },
+                                new
+                                {
+                                    type = "button",
+                                    text = new
+                                    {
+                                        type = "plain_text",
+                                        text = "$20",
+                                        emoji = true
+                                    },
+                                    value = "20",
+                                    action_id = "donate-20"
+                                },
+                                new
+                                {
+                                    type = "button",
+                                    text = new
+                                    {
+                                        type = "plain_text",
+                                        text = "More or less",
+                                        emoji = true
+                                    },
+                                    value = "custom",
+                                    action_id = "donate-custom"
+                                }
+                            }
+                        },
+                        new
+                        {
+                            type = "input",
+                            block_id = "donate_amount_block",
+                            element = new
+                            {
+                                type = "plain_text_input",
+                                action_id = "donate_amount",
+                                initial_value = donateValue == "custom" ? "" : donateValue,
+                                placeholder = new
+                                {
+                                    type = "plain_text",
+                                    text = "Amount to give"
+                                }
+                            },
+                            label = new
+                            {
+                                type = "plain_text",
+                                text = $"Please {confirmationText} amount to give:",
+                                emoji = false
+                            }
+                        },
+                        new
+                        {
+                            type = "divider"
+                        },
+                        new
+                        {
+                            type = "section",
+                            text = new
+                            {
+                                type = "mrkdwn",
+                                text = "*Talk to staff at your local reception*"
+                            }
+                        },
+                        new
+                        {
+                            type = "section",
+                            text = new
+                            {
+                                type = "mrkdwn",
+                                text =
+                                    "You can pay with cash or card at reception, or bank transfer direct to the charity account:"
+                            }
+                        },
+                        new
+                        {
+                            type = "section",
+                            text = new
+                            {
+                                type = "mrkdwn",
+                                text =
+                                    "*Bank Account Name:* Ryman Charity Bank Account\r\n*Bank Account Number:* 01-1111-2222222-00"
+                            }
+                        },
                     },
-                },
-            };
-            
+                };
+            }
+
             var slackRequest = new
             {
-                view_id= payloadObj.view.id,
+                view_id = payloadObj.view.id,
                 view
             };
 
@@ -637,6 +648,52 @@ namespace Ryman.Charity.Donate.Slack.Controllers
             }
 
             return Ok();
+        }
+
+        private object CreatePayView(string viewId, string amount)
+        {
+            return new
+            {
+                type = "modal",
+                title = new
+                {
+                    type = "plain_text",
+                    text = "One step to go",
+                    emoji = true
+                },
+                close = new
+                {
+                    type = "plain_text",
+                    text = "Close",
+                    emoji = false,
+                },
+                blocks = new object[]
+                {
+                    new
+                    {
+                        type = "section",
+                        text = new
+                        {
+                            type = "mrkdwn",
+                            text = "Click \"Pay\" and complete payment in your browser window."
+                        },
+                        accessory = new
+                        {
+                            type = "button",
+                            text = new
+                            {
+                                type = "plain_text",
+                                text = "Pay",
+                                emoji = true
+                            },
+                            action_id = "button-action",
+                            value = "click_me_123",
+                            url = $"{Domain}/slack/interactive/checkout?viewId={Uri.EscapeDataString(viewId)}" +
+                                  $"&price={amount}"
+                        }
+                    },
+                }
+            };
         }
 
         private async Task<IActionResult> CompleteViewAsync(string payload)
@@ -663,53 +720,16 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                     }
                 });
 
+            var view = CreatePayView(
+                payloadObj.view.id,
+                payloadObj.view.state.values.donate_amount_block.donate_amount.value);
+
             await Task.Yield();
 
             return Ok(new
             {
                 response_action = "update",
-                view = new
-                {
-                    type = "modal",
-                    title = new
-                    {
-                        type = "plain_text",
-                        text = "One step to go",
-                        emoji = true
-                    },
-                    close = new
-                    {
-                        type = "plain_text",
-                        text = "Close",
-                        emoji = false,
-                    },
-                    blocks = new object[]
-                    {
-                        new
-                        {
-                            type = "section",
-                            text = new
-                            {
-                                type = "mrkdwn",
-                                text = "Click \"Pay\" and complete payment in your browser window."
-                            },
-                            accessory = new
-                            {
-                                type = "button",
-                                text = new
-                                {
-                                    type = "plain_text",
-                                    text = "Pay",
-                                    emoji = true
-                                },
-                                action_id="button-action",
-                                value = "click_me_123",
-                                url = $"{Domain}/slack/interactive/checkout?viewId={Uri.EscapeDataString(payloadObj.view.id)}" +
-                                      $"&price={payloadObj.view.state.values.donate_amount_block.donate_amount.value}"
-                            }
-                        },
-                    }
-                }
+                view
             });
         }
     }
