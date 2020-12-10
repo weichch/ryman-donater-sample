@@ -62,7 +62,7 @@ namespace Ryman.Charity.Donate.Slack
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

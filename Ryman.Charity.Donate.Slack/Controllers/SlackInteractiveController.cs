@@ -24,6 +24,8 @@ namespace Ryman.Charity.Donate.Slack.Controllers
         private readonly IHttpClientFactory _httpFactory;
         private readonly IConfiguration _configuration;
 
+        private static readonly string Domain = "https://57d97136aa76.ngrok.io";
+
         public SlackInteractiveController(IHttpClientFactory httpFactory, IConfiguration configuration)
         {
             _httpFactory = httpFactory;
@@ -41,7 +43,6 @@ namespace Ryman.Charity.Donate.Slack.Controllers
         public IActionResult Checkout([FromQuery] long price, string viewId)
         {
             // https://stripe.com/docs/checkout/integration-builder
-            var domain = "https://localhost:5001";
             var options = new SessionCreateOptions
             {
                 PaymentMethodTypes = new List<string>
@@ -65,8 +66,8 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                     },
                 },
                 Mode = "payment",
-                SuccessUrl = domain + $"/slack/interactive/callback?viewId={Uri.EscapeDataString(viewId)}",
-                CancelUrl = domain + "/slack/interactive/callback?viewId=cancel",
+                SuccessUrl = Domain + $"/slack/interactive/callback?viewId={Uri.EscapeDataString(viewId)}",
+                CancelUrl = Domain + "/slack/interactive/callback?viewId=cancel",
             };
             var service = new SessionService();
             Session session = service.Create(options);
@@ -114,9 +115,15 @@ namespace Ryman.Charity.Donate.Slack.Controllers
                         text=new
                         {
                             type="plain_text",
-                            text="Payment received! Thank you!",
+                            text="Payment received!",
                             emoji=true
                         }
+                    },
+                    new
+                    {
+                        type="image",
+                        image_url="https://media.tenor.com/images/08c9b2fc65a8ff8e6e72a65910138b9a/tenor.gif",
+                        alt_text="Thank you"
                     }
                 }
             };
@@ -543,7 +550,7 @@ Ryman Healthcare’s support would enable the charity to do some new and excitin
                                 },
                                 action_id="button-action",
                                 value = "click_me_123",
-                                url = $"https://localhost:5001/slack/interactive/checkout?viewId={Uri.EscapeDataString(payloadObj.view.id)}" +
+                                url = $"{Domain}/slack/interactive/checkout?viewId={Uri.EscapeDataString(payloadObj.view.id)}" +
                                       $"&price={payloadObj.view.state.values.donate_amount_block.donate_amount.value}"
                             }
                         },
